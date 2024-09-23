@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <string.h>
+
+// Defina uma estrutura para representar um filme
+typedef struct {
+    char titulo[50];
+    char diretor[50];
+    int ano;
+    char genero[20];
+} Filme;
+
+// Função para adicionar um filme ao catálogo
+void adicionar_filme(Filme filmes[], int *num_filmes) {
+    printf("Digite o título do filme: ");
+    scanf("%49s", filmes[*num_filmes].titulo);
+    printf("Digite o diretor do filme: ");
+    scanf("%49s", filmes[*num_filmes].diretor);
+    printf("Digite o ano do filme: ");
+    scanf("%d", &filmes[*num_filmes].ano);
+    printf("Digite o gênero do filme: ");
+    scanf("%19s", filmes[*num_filmes].genero);
+    (*num_filmes)++;
+}
+
+// Função para exibir o catálogo de filmes
+void exibir_catalogo(Filme filmes[], int num_filmes) {
+    printf("Catálogo de Filmes:\n");
+    for (int i = 0; i < num_filmes; i++) {
+        printf("Título: %s\n", filmes[i].titulo);
+        printf("Diretor: %s\n", filmes[i].diretor);
+        printf("Ano: %d\n", filmes[i].ano);
+        printf("Gênero: %s\n\n", filmes[i].genero);
+    }
+}
+
+int main() {
+    int num_filmes = 0;
+    Filme filmes[100]; // assume um máximo de 100 filmes
+
+    while (1) {
+        printf("1. Adicionar filme\n");
+        printf("2. Exibir catálogo\n");
+        printf("3. Sair\n");
+        int escolha;
+        scanf("%d", &escolha);
+
+        switch (escolha) {
+            case 1:
+                adicionar_filme(filmes, &num_filmes);
+                break;
+            case 2:
+                exibir_catalogo(filmes, num_filmes);
+                break;
+            case 3:
+                return 0;
+            default:
+                printf("Escolha inválida. Tente novamente.\n");
+        }
+    }
+
+    return 0;
+}
