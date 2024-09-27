@@ -1,62 +1,182 @@
-#include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 
-// Defina uma estrutura para representar um filme
-typedef struct {
-    char titulo[50];
-    char diretor[50];
-    int ano;
-    char genero[20];
-} Filme;
+using namespace std;
 
-// Função para adicionar um filme ao catálogo
-void adicionar_filme(Filme filmes[], int *num_filmes) {
-    printf("Digite o título do filme: ");
-    scanf("%49s", filmes[*num_filmes].titulo);
-    printf("Digite o diretor do filme: ");
-    scanf("%49s", filmes[*num_filmes].diretor);
-    printf("Digite o ano do filme: ");
-    scanf("%d", &filmes[*num_filmes].ano);
-    printf("Digite o gênero do filme: ");
-    scanf("%19s", filmes[*num_filmes].genero);
-    (*num_filmes)++;
+struct Filme {
+    string titulo;
+    string ano;
+    string duracao;
+    string classificacao;
+};
+
+struct Genero {
+    string nome;
+    vector<Filme> filmes;
+};
+
+struct Usuario {
+    string email;
+    string senha;
+};
+
+vector<Usuario> usuarios;
+
+bool validarEmail(const string& email) {
+    return (email.find("@gmail.com") != string::npos || email.find("@hotmail.com") != string::npos);
 }
 
-// Função para exibir o catálogo de filmes
-void exibir_catalogo(Filme filmes[], int num_filmes) {
-    printf("Catálogo de Filmes:\n");
-    for (int i = 0; i < num_filmes; i++) {
-        printf("Título: %s\n", filmes[i].titulo);
-        printf("Diretor: %s\n", filmes[i].diretor);
-        printf("Ano: %d\n", filmes[i].ano);
-        printf("Gênero: %s\n\n", filmes[i].genero);
+void cadastrar() {
+    Usuario novoUsuario;
+    cout << "Digite seu email (somente @gmail.com ou @hotmail.com): ";
+    cin >> novoUsuario.email;
+    
+    // Verifica se o email é válido
+    while (!validarEmail(novoUsuario.email)) {
+        cout << "Email inválido. Tente novamente: ";
+        cin >> novoUsuario.email;
+    }
+
+    cout << "Digite sua senha: ";
+    cin >> novoUsuario.senha;
+    
+    // Armazenar o usuário em um arquivo
+    ofstream arquivo("usuarios.txt", ios::app);
+    if (arquivo.is_open()) {
+        arquivo << novoUsuario.email << " " << novoUsuario.senha << endl;
+        arquivo.close();
+    }
+    cout << "Cadastro realizado com sucesso!" << endl;
+}
+
+bool login() {
+    string email, senha;
+    cout << "Digite seu email: ";
+    cin >> email;
+    cout << "Digite sua senha: ";
+    cin >> senha;
+
+    // Verificar se o usuário está cadastrado
+    ifstream arquivo("usuarios.txt");
+    if (arquivo.is_open()) {
+        Usuario usuario;
+        while (arquivo >> usuario.email >> usuario.senha) {
+            if (usuario.email == email && usuario.senha == senha) {
+                return true;
+            }
+        }
+        arquivo.close();
+    }
+    cout << "Email ou senha inválidos!" << endl;
+    return false;
+}
+
+void mostrarCatalogo(const vector<Genero>& generos) {
+    for (size_t i = 0; i < generos.size(); ++i) {
+        cout << i + 1 << " - " << generos[i].nome << endl;
+    }
+}
+
+void mostrarFilmes(const Genero& genero) {
+    for (size_t i = 0; i < genero.filmes.size(); ++i) {
+        cout << "  " << i + 1 << " - " << genero.filmes[i].titulo 
+             << " (" << genero.filmes[i].ano << ")🕗" << genero.filmes[i].duracao << endl
+             << genero.filmes[i].classificacao << endl;
+    }
+}
+
+void verOpcoesFilme(const Filme& filme) {
+    cout << "1 - Ver Resumo do filme" << endl;
+    cout << "2 - Ver Crítica do Filme" << endl;
+    cout << "3 - Ver Comentários" << endl;
+    cout << "4 - Ver Preço do Filme" << endl;
+}
+
+void gravarHistorico(const string& filme) {
+    ofstream arquivo("historico.txt", ios::app);
+    if (arquivo.is_open()) {
+        arquivo << filme << endl;
+        arquivo.close();
     }
 }
 
 int main() {
-    int num_filmes = 0;
-    Filme filmes[100]; // assume um máximo de 100 filmes
+    vector<Genero> generos = {
+        {"Comédia", {
+            {"Os Farofeiros", "2018", "1h 44m", "Não recomendado para menos de 12 anos"},
+            {"Os Farofeiros 2", "2024", "1h 44m", "Não recomendado para menos de 12 anos"},
+            {"As Branquelas", "2004", "1h 49m", "Não recomendado para menores de 14 anos"},
+            {"Norbit - Uma Comédia de Peso", "2007", "1h 43m", "Não recomendado para menos de 12 anos"},
+            {"Vai que Cola - O Filme", "2015", "1h 45m", "Não recomendado para menos de 12 anos"},
+            {"A Proposta", "2009", "1h 48m", "Não recomendado para menos de 12 anos"}
+        }},
+        {"Romance", {
+            {"Como Eu Era Antes de Você", "2016", "1h 50m", "Não recomendado para menos de 12 anos"},
+            {"10 Coisas Que Eu Odeio Em Você", "1999", "1h 37m", "Não recomendado para menor de 10 anos"},
+            {"Imagine Eu E Você", "2005", "1h 34m", "Não recomendado para menor de 10 anos"},
+            {"Meu Primeiro Verão", "2020", "1h 20m", "Não recomendado para menores de 14 anos"},
+            {"Dirty Dancing - Ritmo Quente", "1987", "1h 40m", "Não recomendado para menores de 16 anos"},
+            {"Vermelho, Branco e Sangue Azul", "2023", "1h 58m", "Não recomendado para menores de 14 anos"}
+        }},
+        {"Ação", {
+            {"O Escorpião Rei", "2002", "1h 32m", "Não recomendado para menos de 12 anos"},
+            {"Hércules", "2014", "1h 38m", "Não recomendado para menores de 14 anos"},
+            {"300", "2006", "1h 57m", "Não recomendado para menores de 16 anos"},
+            {"Deuses Do Egito", "2016", "2h 6m", "Não recomendado para menos de 12 anos"},
+            {"Esquadrão 6", "2019", "2h 8m", "Não recomendado para menores de 14 anos"},
+            {"Jurassic World: O Mundo dos Dinossauros", "2015", "2h 4m", "Não recomendado para menos de 12 anos"}
+        }},
+        {"Terror", {
+            {"O Telefone Preto", "2021", "1h 42m", "Não recomendado para menores de 16 anos"},
+            {"A Entidade", "2012", "1h 50m", "Não recomendado para menores de 14 anos"},
+            {"Mama", "2013", "1h 40m", "Não recomendado para menores de 14 anos"},
+            {"M3gan", "2022", "1h 42m", "Não recomendado para menores de 14 anos"},
+            {"Sono Mortal", "2016", "1h 39m", "Não recomendado para menores de 14 anos"},
+            {"A Freira", "2018", "1h 36m", "Não recomendado para menores de 14 anos"}
+        }},
+        {"Desenhos Animados", {
+            {"Moana - Um Mar De Aventuras", "2016", "1h 47m", "Infantil"},
+            {"Kung Fu Panda", "2008", "1h 32m", "Infantil"},
+            {"O Mar Não Está Prá Peixe", "2006", "1h 17m", "Infantil"},
+            {"Procurando Nemo", "2003", "1h 40m", "Infantil"},
+            {"Detona Ralph", "2012", "1h 48m", "Infantil"},
+            {"Toy Story", "1995", "1h 21m", "Infantil"}
+        }}
+    };
 
-    while (1) {
-        printf("1. Adicionar filme\n");
-        printf("2. Exibir catálogo\n");
-        printf("3. Sair\n");
-        int escolha;
-        scanf("%d", &escolha);
+    int opcao;
+    cout << "Bem vindo à locadora" << endl;
+    cout << "1 - Cadastro" << endl;
+    cout << "2 - Login" << endl;
+    cin >> opcao;
 
-        switch (escolha) {
-            case 1:
-                adicionar_filme(filmes, &num_filmes);
-                break;
-            case 2:
-                exibir_catalogo(filmes, num_filmes);
-                break;
-            case 3:
-                return 0;
-            default:
-                printf("Escolha inválida. Tente novamente.\n");
+    if (opcao == 1) {
+        cadastrar();
+    } else if (opcao == 2) {
+        if (login()) {
+            cout << "Login bem-sucedido!" << endl;
+
+            cout << "Digite o id do gênero de filme:" << endl;
+            mostrarCatalogo(generos);
+            int idGenero;
+            cin >> idGenero;
+            mostrarFilmes(generos[idGenero - 1]);
+
+            cout << "Digite o id do filme:" << endl;
+            int idFilme;
+            cin >> idFilme;
+
+            Filme filmeSelecionado = generos[idGenero - 1].filmes[idFilme - 1];
+            verOpcoesFilme(filmeSelecionado);
+
+            // Implementar lógica de escolha da opção e armazenamento de histórico/devoluções
         }
+    } else {
+        cout << "Opção inválida!" << endl;
     }
 
+    cout << "Obrigado por Comprar Em Nossa Locadora!" << endl;
     return 0;
 }
