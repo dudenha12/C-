@@ -32,8 +32,7 @@ void cadastrar() {
     Usuario novoUsuario;
     cout << "Digite seu email (somente @gmail.com ou @hotmail.com): ";
     cin >> novoUsuario.email;
-    
-    // Verifica se o email é válido
+
     while (!validarEmail(novoUsuario.email)) {
         cout << "Email inválido. Tente novamente: ";
         cin >> novoUsuario.email;
@@ -41,8 +40,7 @@ void cadastrar() {
 
     cout << "Digite sua senha: ";
     cin >> novoUsuario.senha;
-    
-    // Armazenar o usuário em um arquivo
+
     ofstream arquivo("usuarios.txt", ios::app);
     if (arquivo.is_open()) {
         arquivo << novoUsuario.email << " " << novoUsuario.senha << endl;
@@ -58,7 +56,6 @@ bool login() {
     cout << "Digite sua senha: ";
     cin >> senha;
 
-    // Verificar se o usuário está cadastrado
     ifstream arquivo("usuarios.txt");
     if (arquivo.is_open()) {
         Usuario usuario;
@@ -82,23 +79,34 @@ void mostrarCatalogo(const vector<Genero>& generos) {
 void mostrarFilmes(const Genero& genero) {
     for (size_t i = 0; i < genero.filmes.size(); ++i) {
         cout << "  " << i + 1 << " - " << genero.filmes[i].titulo 
-             << " (" << genero.filmes[i].ano << ")🕗" << genero.filmes[i].duracao << endl
+             << " (" << genero.filmes[i].ano << ") 🕗 " << genero.filmes[i].duracao << endl
              << genero.filmes[i].classificacao << endl;
     }
 }
 
-void verOpcoesFilme(const Filme& filme) {
+void mostrarOpcoesFilme(const Filme& filme) {
     cout << "1 - Ver Resumo do filme" << endl;
     cout << "2 - Ver Crítica do Filme" << endl;
     cout << "3 - Ver Comentários" << endl;
     cout << "4 - Ver Preço do Filme" << endl;
 }
 
-void gravarHistorico(const string& filme) {
-    ofstream arquivo("historico.txt", ios::app);
-    if (arquivo.is_open()) {
-        arquivo << filme << endl;
-        arquivo.close();
+void executarOpcaoFilme(int opcao, const Filme& filme) {
+    switch (opcao) {
+        case 1:
+            cout << "Resumo de " << filme.titulo << ": [Resumo aqui]" << endl;
+            break;
+        case 2:
+            cout << "Crítica de " << filme.titulo << ": [Crítica aqui]" << endl;
+            break;
+        case 3:
+            cout << "Comentários sobre " << filme.titulo << ": [Comentários aqui]" << endl;
+            break;
+        case 4:
+            cout << "Preço de " << filme.titulo << ": [Preço aqui]" << endl;
+            break;
+        default:
+            cout << "Opção inválida!" << endl;
     }
 }
 
@@ -157,24 +165,51 @@ int main() {
     } else if (opcao == 2) {
         if (login()) {
             cout << "Login bem-sucedido!" << endl;
-
-            cout << "Digite o id do gênero de filme:" << endl;
-            mostrarCatalogo(generos);
-            int idGenero;
-            cin >> idGenero;
-            mostrarFilmes(generos[idGenero - 1]);
-
-            cout << "Digite o id do filme:" << endl;
-            int idFilme;
-            cin >> idFilme;
-
-            Filme filmeSelecionado = generos[idGenero - 1].filmes[idFilme - 1];
-            verOpcoesFilme(filmeSelecionado);
-
-            // Implementar lógica de escolha da opção e armazenamento de histórico/devoluções
+        } else {
+            return 1; // Encerra o programa se o login falhar
         }
     } else {
         cout << "Opção inválida!" << endl;
+        return 1; // Encerra o programa se a opção for inválida
+    }
+
+    while (true) {
+        cout << "Digite o id do gênero de filme:" << endl;
+        mostrarCatalogo(generos);
+        int idGenero;
+        cin >> idGenero;
+
+        if (idGenero < 1 || idGenero > generos.size()) {
+            cout << "Gênero inválido. Tente novamente." << endl;
+            continue; // Volta ao início do loop
+        }
+
+        mostrarFilmes(generos[idGenero - 1]);
+
+        cout << "Digite o id do filme:" << endl;
+        int idFilme;
+        cin >> idFilme;
+
+        if (idFilme < 1 || idFilme > generos[idGenero - 1].filmes.size()) {
+            cout << "Filme inválido. Tente novamente." << endl;
+            continue; // Volta ao início do loop
+        }
+
+        Filme filmeSelecionado = generos[idGenero - 1].filmes[idFilme - 1];
+        mostrarOpcoesFilme(filmeSelecionado);
+
+        cout << "Escolha uma opção: ";
+        int opcaoFilme;
+        cin >> opcaoFilme;
+
+        executarOpcaoFilme(opcaoFilme, filmeSelecionado);
+
+        cout << "Deseja escolher outro filme? (s/n): ";
+        char continuar;
+        cin >> continuar;
+        if (continuar != 's' && continuar != 'S') {
+            break; // Encerra o loop se o usuário não quiser continuar
+        }
     }
 
     cout << "Obrigado por Comprar Em Nossa Locadora!" << endl;
