@@ -30,7 +30,7 @@ bool validarEmail(const string& email) {
 
 void cadastrar() {
     Usuario novoUsuario;
-    cout << "Digite seu email (somente @gmail.com ou @hotmail.com): ";
+    cout << "Digite seu email (somente com o @gmail.com ou @hotmail.com): ";
     cin >> novoUsuario.email;
 
     while (!validarEmail(novoUsuario.email)) {
